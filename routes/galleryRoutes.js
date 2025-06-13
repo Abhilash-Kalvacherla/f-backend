@@ -3,7 +3,7 @@ const router = express.Router();
 const { uploadImage, getImages } = require('../controllers/galleryController');
 const multer = require('multer');
 
-// Multer Setup (for local handling before uploading to Cloudinary)
+// Multer setup (uses memory for stream upload to Cloudinary)
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 

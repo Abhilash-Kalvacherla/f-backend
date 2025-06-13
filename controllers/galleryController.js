@@ -12,24 +12,32 @@ exports.uploadImage = async (req, res) => {
   try {
     const file = req.file;
 
-    const result = await cloudinary.uploader.upload_stream(
-      { resource_type: "image" },
-      async (error, result) => {
-        if (error) return res.status(500).json({ error });
+    // Wrap upload_stream in a Promise
+    const streamUpload = (fileBuffer) => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { resource_type: "image" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(fileBuffer);
+      });
+    };
 
-        const newImage = new Image({
-          url: result.secure_url,
-          public_id: result.public_id,
-          uploader: req.body.uploader || 'Anonymous',
-        });
+    const result = await streamUpload(file.buffer);
 
-        await newImage.save();
-        res.status(201).json(newImage);
-      }
-    );
+    const newImage = new Image({
+      url: result.secure_url,
+      public_id: result.public_id,
+      uploader: req.body.uploader || "Anonymous",
+    });
 
-    result.end(file.buffer);
+    await newImage.save();
+    res.status(201).json(newImage);
   } catch (err) {
+    console.error("Cloudinary upload error:", err);
     res.status(500).json({ error: "Upload Failed" });
   }
 };

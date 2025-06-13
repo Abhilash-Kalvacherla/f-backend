@@ -6,8 +6,8 @@ const imageSchema = new mongoose.Schema({
   uploader: String,
   date: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 module.exports = mongoose.model('Image', imageSchema);
